@@ -37,7 +37,7 @@ export default function getDatabase(): Knex {
 			requiredEnvVars.push('DB_FILENAME');
 			break;
 
-		case 'informixdb':
+		case '@etisoftware/knex-informix-dialect':
 			if (env.DB_SERVER) {
 				requiredEnvVars.push('DB_SERVER', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USER', 'DB_PASSWORD');
 			}
