@@ -37,6 +37,12 @@ export default function getDatabase(): Knex {
 			requiredEnvVars.push('DB_FILENAME');
 			break;
 
+		case 'informixdb':
+			if (env.DB_SERVER) {
+				requiredEnvVars.push('DB_SERVER', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USER', 'DB_PASSWORD');
+			}
+			break;
+
 		case 'oracledb':
 			if (!env.DB_CONNECT_STRING) {
 				requiredEnvVars.push('DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USER', 'DB_PASSWORD');
@@ -221,6 +227,8 @@ export function getDatabaseClient(database?: Knex): DatabaseClient {
 			return 'mssql';
 		case 'Client_Redshift':
 			return 'redshift';
+		case 'Client_Informix':
+			return 'informixdb';
 	}
 
 	throw new Error(`Couldn't extract database client`);

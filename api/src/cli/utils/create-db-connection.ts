@@ -5,6 +5,7 @@ import { Driver } from '../../types';
 
 export type Credentials = {
 	filename?: string;
+	server?: string;
 	host?: string;
 	port?: number;
 	database?: string;
@@ -21,6 +22,17 @@ export default function createDBConnection(client: Driver, credentials: Credenti
 
 		connection = {
 			filename: filename as string,
+		};
+	} else if (client === '@etisoftware/knex-informix-dialect') {
+		const { server, host, port, database, user, password } = credentials as Credentials;
+
+		connection = {
+			server: server,
+			host: host,
+			port: Number(port),
+			database: database,
+			user: user,
+			password: password,
 		};
 	} else {
 		const { host, port, database, user, password } = credentials as Credentials;

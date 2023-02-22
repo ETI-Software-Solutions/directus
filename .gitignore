@@ -24,3 +24,4 @@ TODO
 .*.swp
 debug
 debug.ts
+api/.npmrc

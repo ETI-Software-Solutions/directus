@@ -5,3 +5,4 @@ export { SchemaHelperOracle as oracle } from './dialects/oracle';
 export { SchemaHelperSQLite as sqlite } from './dialects/sqlite';
 export { SchemaHelperMySQL as mysql } from './dialects/mysql';
 export { SchemaHelperMSSQL as mssql } from './dialects/mssql';
+export { SchemaHelperInformixDB as informixdb } from './dialects/informixdb';

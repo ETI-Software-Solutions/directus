@@ -10,7 +10,7 @@ tag=latest
 
 build-image:
 	pnpm install
-	pnpm -r build
+	NODE_OPTIONS=--max_old_space_size=8192 pnpm -r build
 	node pack.js
 	docker build \
 		--build-arg VERSION=$(version) \

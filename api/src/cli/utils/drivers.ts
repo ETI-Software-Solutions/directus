@@ -7,6 +7,7 @@ export const drivers: Record<Driver, string> = {
 	sqlite3: 'SQLite',
 	mssql: 'Microsoft SQL Server',
 	oracledb: 'Oracle Database',
+	'@etisoftware/knex-informix-dialect': 'IBM Informix',
 };
 
 export function getDriverForClient(client: string): Driver | null {

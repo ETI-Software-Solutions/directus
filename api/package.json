@@ -15,6 +15,7 @@
 		"headless",
 		"cms",
 		"mysql",
+		"informix",
 		"postgresql",
 		"cockroachdb",
 		"sqlite",
