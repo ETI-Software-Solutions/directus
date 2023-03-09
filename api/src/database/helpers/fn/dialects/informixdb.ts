@@ -15,23 +15,23 @@ export class FnHelperInformixDB extends FnHelper {
 	}
 
 	day(table: string, column: string): Knex.Raw {
-		return this.knex.raw('DAYOFMONTH(??.??)', [table, column]);
+		return this.knex.raw('DAY(??.??)', [table, column]);
 	}
 
 	weekday(table: string, column: string): Knex.Raw {
-		return this.knex.raw('DAYOFWEEK(??.??)', [table, column]);
+		return this.knex.raw('WEEKDAY(??.??)', [table, column]);
 	}
 
 	hour(table: string, column: string): Knex.Raw {
-		return this.knex.raw('HOUR(??.??)', [table, column]);
+		return this.knex.raw('EXTEND(??.??, HOUR TO HOUR)::INT', [table, column]);
 	}
 
 	minute(table: string, column: string): Knex.Raw {
-		return this.knex.raw('MINUTE(??.??)', [table, column]);
+		return this.knex.raw('EXTEND(??.??, MINUTE TO MINUTE)::INT', [table, column]);
 	}
 
 	second(table: string, column: string): Knex.Raw {
-		return this.knex.raw('SECOND(??.??)', [table, column]);
+		return this.knex.raw('EXTEND(??.??, SECOND TO SECOND)::INT', [table, column]);
 	}
 
 	count(table: string, column: string, options?: FnHelperOptions): Knex.Raw {

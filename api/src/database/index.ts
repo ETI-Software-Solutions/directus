@@ -11,6 +11,8 @@ import { merge } from 'lodash';
 import { promisify } from 'util';
 import { getHelpers } from './helpers';
 import { DatabaseClient } from '../types';
+// @ts-ignore
+import informixdb from '@etisoftware/knex-informix-dialect';
 
 let database: Knex | null = null;
 let inspector: ReturnType<typeof SchemaInspector> | null = null;
@@ -70,8 +72,10 @@ export default function getDatabase(): Knex {
 
 	validateEnv(requiredEnvVars);
 
+	const dbClient = client === '@etisoftware/knex-informix-dialect' ? informixdb : client;
+
 	const knexConfig: Knex.Config = {
-		client,
+		client: dbClient,
 		version,
 		searchPath,
 		connection: connectionString || connectionConfig,
@@ -182,6 +186,8 @@ export async function hasDatabaseConnection(database?: Knex): Promise<boolean> {
 	try {
 		if (getDatabaseClient(database) === 'oracle') {
 			await database.raw('select 1 from DUAL');
+		} else if (getDatabaseClient(database) === 'informixdb') {
+			await database.raw('SELECT 1 FROM sysmaster:informix.sysdual');
 		} else {
 			await database.raw('SELECT 1');
 		}
@@ -198,6 +204,8 @@ export async function validateDatabaseConnection(database?: Knex): Promise<void>
 	try {
 		if (getDatabaseClient(database) === 'oracle') {
 			await database.raw('select 1 from DUAL');
+		} else if (getDatabaseClient(database) === 'informixdb') {
+			await database.raw('SELECT 1 FROM sysmaster:informix.sysdual');
 		} else {
 			await database.raw('SELECT 1');
 		}

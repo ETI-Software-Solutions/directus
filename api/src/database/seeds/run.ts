@@ -36,6 +36,23 @@ export default async function runSeed(database: Knex): Promise<void> {
 
 	const tableSeeds = await fse.readdir(path.resolve(__dirname));
 
+	const formatDefault = (value: any, type: any, client: any) => {
+		if (value === void 0) {
+			return '';
+		} else if (value === null) {
+			return 'null';
+		} else if (value && value.isRawInstance) {
+			return value.toQuery();
+		} else if (type === 'bool') {
+			if (value === 'false') value = 'f';
+			return value ? 't' : 'f';
+		} else if ((type === 'json' || type === 'jsonb') && isObject(value)) {
+			return `'${JSON.stringify(value)}'`;
+		} else {
+			return client._escapeBinding(value.toString());
+		}
+	};
+
 	for (const tableSeedFile of tableSeeds) {
 		if (tableSeedFile.startsWith('run')) continue;
 
@@ -59,6 +76,9 @@ export default async function runSeed(database: Knex): Promise<void> {
 					column = tableBuilder.string(columnName, 255);
 				} else if (columnInfo.type?.startsWith('geometry')) {
 					column = helpers.st.createColumn(tableBuilder, { field: columnName, type: columnInfo.type } as Field);
+				} else if (process.env.DB_CLIENT === '@etisoftware/knex-informix-dialect' && columnInfo.type === 'timestamp') {
+					// @ts-ignore
+					column = tableBuilder['integer'!](columnName);
 				} else {
 					// @ts-ignore
 					column = tableBuilder[columnInfo.type!](columnName);
@@ -83,7 +103,13 @@ export default async function runSeed(database: Knex): Promise<void> {
 						defaultValue = database!.fn.now();
 					}
 
-					column.defaultTo(defaultValue);
+					if (process.env.DB_CLIENT === '@etisoftware/knex-informix-dialect') {
+						column.defaultTo = (value: string): any => {
+							return `default ${formatDefault(value, columnInfo.type, database.client)}`;
+						};
+					} else {
+						column.defaultTo(defaultValue);
+					}
 				}
 
 				if (columnInfo.unique) {

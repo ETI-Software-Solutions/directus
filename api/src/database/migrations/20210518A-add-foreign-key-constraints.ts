@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import SchemaInspector from 'knex-schema-inspector';
+import SchemaInspector from '@directus/schema';
 import logger from '../../logger';
 import { RelationMeta } from '@directus/shared/types';
 import { getDefaultIndexName } from '../../utils/get-default-index-name';

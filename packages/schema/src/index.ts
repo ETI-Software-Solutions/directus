@@ -28,6 +28,9 @@ export default function Schema(knex: Knex): SchemaInspector {
 		case 'Client_MSSQL':
 			constructor = require('./dialects/mssql').default;
 			break;
+		case 'Client_Informix':
+			constructor = require('./dialects/informixdb').default;
+			break;
 
 		default:
 			throw Error('Unsupported driver used: ' + knex.client.constructor.name);
