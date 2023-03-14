@@ -280,31 +280,117 @@ export default class InformixDB implements SchemaInspector {
 	// ===============================================================================================
 
 	async foreignKeys(table?: string) {
-		const query = this.knex
-			.select(
-				`rc.TABLE_NAME AS table`,
-				`kcu.COLUMN_NAME AS column`,
-				`rc.REFERENCED_TABLE_NAME AS foreign_key_table`,
-				`kcu.REFERENCED_COLUMN_NAME AS foreign_key_column`,
-				`rc.CONSTRAINT_NAME AS constraint_name`,
-				`rc.UPDATE_RULE AS on_update`,
-				`rc.DELETE_RULE AS on_delete`
-			)
-			.from(`information_schema.referential_constraints AS rc`)
-			.leftJoin(`information_schema.key_column_usage AS kcu `, function () {
-				this.on(`rc.CONSTRAINT_NAME`, `=`, `kcu.CONSTRAINT_NAME`).andOn(
-					`kcu.CONSTRAINT_SCHEMA`,
-					`=`,
-					`rc.CONSTRAINT_SCHEMA`
-				);
-			})
-			.where({
-				'rc.CONSTRAINT_SCHEMA': this.knex.client.database(),
-			});
+		// this.knex.raw(
+		// 	`DROP FUNCTION IF EXISTS sp_allconst;
+
+		// 	CREATE FUNCTION sp_allconst() RETURNING VARCHAR(128) AS dtabname,
+		// 											VARCHAR(128) AS dcolname,
+		// 											VARCHAR(128) AS ctabname,
+		// 											VARCHAR(128) AS ccolname,
+		// 											VARCHAR(128) AS cname;
+
+		// 		DEFINE l_constrname VARCHAR(128);
+
+		// 		DEFINE l_dtabname   VARCHAR(128);
+		// 		DEFINE l_ptabname   VARCHAR(128);
+
+		// 		DEFINE l_dtabid     LIKE systables.tabid;
+		// 		DEFINE l_ptabid     LIKE systables.tabid;
+
+		// 		DEFINE l_dindexkeys LIKE sysindices.indexkeys;
+		// 		DEFINE l_pindexkeys LIKE sysindices.indexkeys;
+
+		// 		DEFINE l_dcolno     LIKE syscolumns.colno;
+		// 		DEFINE l_pcolno     LIKE syscolumns.colno;
+
+		// 		DEFINE l_dcolname   VARCHAR(128);
+		// 		DEFINE l_pcolname   VARCHAR(128);
+
+		// 		DEFINE l_keyid      SMALLINT;
+
+		// 		FOREACH
+
+		// 			SELECT  dc.constrname,
+		// 					TRIM(dt.tabname), dt.tabid, di.indexkeys,
+		// 					TRIM(pt.tabname), pt.tabid, pi.indexkeys
+		// 			INTO    l_constrname,
+		// 					l_dtabname, l_dtabid, l_dindexkeys,
+		// 					l_ptabname, l_ptabid, l_pindexkeys
+		// 			FROM    sysconstraints AS dc
+		// 			JOIN    sysobjstate    AS do ON do.name     = dc.constrname
+		// 			JOIN    systables      AS dt ON dt.tabid    = dc.tabid
+		// 			JOIN    sysindices     AS di ON di.idxname  = dc.idxname
+		// 			JOIN    sysreferences  AS dr ON dr.constrid = dc.constrid
+		// 			JOIN    sysconstraints AS pc ON pc.constrid = dr.primary
+		// 			JOIN    systables      AS pt ON pt.tabid    = pc.tabid
+		// 			JOIN    sysindices     AS pi ON pi.idxname  = pc.idxname
+		// 			WHERE   dc.constrtype = 'R'
+		// 			AND     do.objtype = 'C'
+		// 			AND     do.state = 'E'
+		// 			AND     dt.tabname not like 'sys%'
+		// 			AND     dt.tabname not like 'vw%'
+		// 			ORDER   BY 2, 1
+
+		// 			FOR l_keyid = 0 TO 15
+
+		// 				LET l_dcolno = ikeyextractcolno(l_dindexkeys, l_keyid);
+		// 				LET l_pcolno = ikeyextractcolno(l_pindexkeys, l_keyid);
+
+		// 				IF l_dcolno = 0 THEN
+		// 					EXIT FOR;
+		// 				END IF;
+
+		// 				SELECT  TRIM(colname)
+		// 				INTO    l_dcolname
+		// 				FROM    syscolumns
+		// 				WHERE   tabid = l_dtabid
+		// 				AND     colno = l_dcolno;
+
+		// 				SELECT  TRIM(colname)
+		// 				INTO    l_pcolname
+		// 				FROM    syscolumns
+		// 				WHERE   tabid = l_ptabid
+		// 				AND     colno = l_pcolno;
+
+		// 			END FOR;
+
+		// 			FOR l_keyid = 0 TO 15
+
+		// 				LET l_dcolno = ikeyextractcolno(l_dindexkeys, l_keyid);
+
+		// 				IF l_dcolno = 0 THEN
+		// 					EXIT FOR;
+		// 				END IF;
+
+		// 				SELECT  TRIM(colname)
+		// 				INTO    l_dcolname
+		// 				FROM    syscolumns
+		// 				WHERE   tabid = l_dtabid
+		// 				AND     colno = l_dcolno;
+
+		// 			END FOR;
+
+		// 			RETURN l_dtabname, l_dcolname, l_ptabname, l_pcolname, l_constrname WITH RESUME;
+
+		// 		END FOREACH;
+
+		// 	END FUNCTION;`
+		// );
+
+		let sql = `
+		SELECT table, column, foreign_key_table, foreign_key_column, constraint_name,
+		'R' AS update_rule, 'R' AS delete_rule
+		FROM TABLE (FUNCTION sp_allconst()) 
+		allconstraints( table, column, foreign_key_table, foreign_key_column, constraint_name)
+	`;
+
 		if (table) {
-			query.andWhere({ 'rc.TABLE_NAME': table });
+			sql += ` WHERE table = '${table}'`;
 		}
-		const result: ForeignKey[] = await query;
+
+		const query = this.knex.raw(sql);
+		const raw_result = await query;
+		const result: ForeignKey[] = raw_result[0];
 		return result;
 	}
 }

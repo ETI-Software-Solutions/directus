@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 import logger from '../../logger';
-import SchemaInspector from 'knex-schema-inspector';
+import SchemaInspector from '@directus/schema';
 
 /**
  * Things to keep in mind:
