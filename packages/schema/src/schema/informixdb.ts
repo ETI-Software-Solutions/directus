@@ -250,12 +250,6 @@ export default class InformixDB implements SchemaInspector {
 	 * Get the primary key column for the given table
 	 */
 	async primary(table: string) {
-		// const results = await this.knex.raw(`SHOW KEYS FROM ?? WHERE Key_name = 'PRIMARY'`, table);
-
-		// if (results && results.length && results[0].length) {
-		// 	return results[0][0]['Column_name'] as string;
-		// }
-
 		const result = await this.knex
 			.select('c.constrname AS pk_name', 'c.constrtype AS pk_type', 'col.colname AS pk_column')
 			.from('sysconstraints AS c')

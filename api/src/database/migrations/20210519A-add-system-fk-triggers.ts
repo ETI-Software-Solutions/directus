@@ -19,7 +19,7 @@ const updates = [
 			{
 				column: 'folder',
 				references: 'directus_folders.id',
-				on_delete: 'SET NULL',
+				on_delete: '',
 			},
 		],
 	},
@@ -74,7 +74,7 @@ const updates = [
 			{
 				column: 'role',
 				references: 'directus_roles.id',
-				on_delete: 'SET NULL',
+				on_delete: '',
 			},
 		],
 	},

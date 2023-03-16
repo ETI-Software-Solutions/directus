@@ -5,12 +5,7 @@ const indexName = getDefaultIndexName('foreign', 'directus_settings', 'storage_d
 
 export async function up(knex: Knex): Promise<void> {
 	await knex.schema.alterTable('directus_settings', (table) => {
-		table
-			.uuid('storage_default_folder')
-			.references('id')
-			.inTable('directus_folders')
-			.withKeyName(indexName)
-			.onDelete('SET NULL');
+		table.uuid('storage_default_folder').references('id').inTable('directus_folders').withKeyName(indexName);
 	});
 }
 

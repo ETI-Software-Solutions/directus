@@ -76,9 +76,6 @@ export default async function runSeed(database: Knex): Promise<void> {
 					column = tableBuilder.string(columnName, 255);
 				} else if (columnInfo.type?.startsWith('geometry')) {
 					column = helpers.st.createColumn(tableBuilder, { field: columnName, type: columnInfo.type } as Field);
-				} else if (process.env.DB_CLIENT === '@etisoftware/knex-informix-dialect' && columnInfo.type === 'timestamp') {
-					// @ts-ignore
-					column = tableBuilder['integer'!](columnName);
 				} else {
 					// @ts-ignore
 					column = tableBuilder[columnInfo.type!](columnName);

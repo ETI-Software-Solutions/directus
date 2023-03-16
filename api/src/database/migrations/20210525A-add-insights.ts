@@ -1,4 +1,5 @@
 import { Knex } from 'knex';
+import { now } from './utils';
 
 export async function up(knex: Knex): Promise<void> {
 	await knex.schema.createTable('directus_dashboards', (table) => {
@@ -6,8 +7,8 @@ export async function up(knex: Knex): Promise<void> {
 		table.string('name').notNullable();
 		table.string('icon', 30).notNullable().defaultTo('dashboard');
 		table.text('note');
-		table.timestamp('date_created').defaultTo(knex.fn.now());
-		table.uuid('user_created').references('id').inTable('directus_users').onDelete('SET NULL');
+		table.timestamp('date_created').defaultTo(now(knex));
+		table.uuid('user_created').references('id').inTable('directus_users');
 	});
 
 	await knex.schema.createTable('directus_panels', (table) => {
@@ -24,8 +25,8 @@ export async function up(knex: Knex): Promise<void> {
 		table.integer('width').notNullable();
 		table.integer('height').notNullable();
 		table.json('options');
-		table.timestamp('date_created').defaultTo(knex.fn.now());
-		table.uuid('user_created').references('id').inTable('directus_users').onDelete('SET NULL');
+		table.timestamp('date_created').defaultTo(now(knex));
+		table.uuid('user_created').references('id').inTable('directus_users');
 	});
 }
 

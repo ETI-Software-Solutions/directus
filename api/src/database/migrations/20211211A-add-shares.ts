@@ -1,4 +1,5 @@
 import { Knex } from 'knex';
+import { now } from './utils';
 
 export async function up(knex: Knex): Promise<void> {
 	await knex.schema.createTable('directus_shares', (table) => {
@@ -8,8 +9,8 @@ export async function up(knex: Knex): Promise<void> {
 		table.string('item');
 		table.uuid('role').references('id').inTable('directus_roles').onDelete('CASCADE');
 		table.string('password');
-		table.uuid('user_created').references('id').inTable('directus_users').onDelete('SET NULL');
-		table.timestamp('date_created').defaultTo(knex.fn.now());
+		table.uuid('user_created').references('id').inTable('directus_users');
+		table.timestamp('date_created').defaultTo(now(knex));
 
 		// This was changed after the migration went live to retroactively fix mysql5, see #10693
 		table.timestamp('date_start').nullable().defaultTo(null);
