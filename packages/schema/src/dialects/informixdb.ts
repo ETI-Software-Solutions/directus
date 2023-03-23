@@ -8,7 +8,7 @@ export default class InformixDB extends KnexInformixDB implements SchemaInspecto
 			`
 			select st.tabname as table_name,
 			scol.colname as column_name,
-			SUBSTR( sdef.default, CHARINDEX(' ', default)+1 ) as default_value,
+			SUBSTR(sdef.default, CHARINDEX(' ', default)+1 ) as default_value,
 			CASE
 			  WHEN (scol.coltype = 2) THEN 'INT'
 			  WHEN (scol.coltype = 3) THEN 'FLOAT'
@@ -51,7 +51,7 @@ export default class InformixDB extends KnexInformixDB implements SchemaInspecto
 			  (
 				select unique
 				  (select c.colname from syscolumns c where c.tabid = i.tabid and c.colno = i.part1)
-				   from sysindexes i , systables t
+				   from sysindexes i, systables t
 					  where i.tabid = t.tabid
 						and t.tabname = st.tabname
 						and idxname in
@@ -71,7 +71,7 @@ export default class InformixDB extends KnexInformixDB implements SchemaInspecto
 			  (
 				select unique
 				  (select c.colname from syscolumns c where c.tabid = i.tabid and c.colno = i.part2)
-				   from sysindexes i , systables t
+				   from sysindexes i, systables t
 					  where i.tabid = t.tabid
 						and t.tabname = st.tabname
 						and idxname in
@@ -91,7 +91,7 @@ export default class InformixDB extends KnexInformixDB implements SchemaInspecto
 			  (
 				select unique
 				  (select c.colname from syscolumns c where c.tabid = i.tabid and c.colno = i.part3)
-				   from sysindexes i , systables t
+				   from sysindexes i, systables t
 					  where i.tabid = t.tabid
 						and t.tabname = st.tabname
 						and idxname in
@@ -113,14 +113,19 @@ export default class InformixDB extends KnexInformixDB implements SchemaInspecto
 				   (select c.colname from syscolumns c
 					where c.tabid = i.tabid and c.colno = i.part1
 				   )
-				  from sysindexes i , systables t
+				  from sysindexes i, systables t
 				  where i.tabid = t.tabid
 					and t.tabname = st.tabname
 					and idxtype = 'U'
 			  ) THEN 'UNI'
 			END AS column_key
-			`,
-			[this.knex.client.database()]
+			from systables st, syscolumns scol, outer sysdefaults sdef
+			where st.tabid = scol.tabid
+			and scol.tabid = sdef.tabid and scol.colno = sdef.colno
+			and tabname not like 'vw_%'
+			and tabname not like 'sys%'
+			order by tabname, column_name
+			`
 		);
 
 		const overview: SchemaOverview = {};
@@ -136,16 +141,16 @@ export default class InformixDB extends KnexInformixDB implements SchemaInspecto
 				};
 			}
 
-			let dataType = column.data_type.replace(/\(.*?\)/, '');
-			if (column.data_type.startsWith('tinyint(1)')) {
-				dataType = 'boolean';
+			let dataType = '';
+			if (column.data_type) {
+				dataType = column.data_type.replace(/\(.*?\)/, '');
 			}
 
 			overview[column.table_name].columns[column.column_name] = {
 				...column,
-				default_value: column.extra === 'auto_increment' ? 'AUTO_INCREMENT' : parseDefaultValue(column.default_value),
+				default_value: parseDefaultValue(column.default_value),
 				is_nullable: column.is_nullable === 'YES',
-				is_generated: column.extra?.endsWith('GENERATED') ?? false,
+				is_generated: false,
 				data_type: dataType,
 			};
 		}

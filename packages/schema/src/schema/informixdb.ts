@@ -128,8 +128,8 @@ export default class InformixDB implements SchemaInspector {
 	 * Check if a table exists in the current schema/database
 	 */
 	async hasTable(table: string): Promise<boolean> {
-		const result = await this.knex('systables').count<{ count: 0 | 1 }>({ count: '*' }).where({ tabname: table });
-		return (result && result.count === 1) || false;
+		const result = await this.knex('systables').count<[{ count: '0' | '1' }]>({ count: '*' }).where({ tabname: table });
+		return (result && result[0].count === '1') || false;
 	}
 
 	// Columns
