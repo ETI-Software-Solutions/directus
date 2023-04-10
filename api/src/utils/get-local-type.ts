@@ -113,8 +113,8 @@ export default function getLocalType(
 ): Type | 'unknown' {
 	if (!column) return 'alias';
 
-	const dataType = column.data_type.toLowerCase();
-	const type = localTypeMap[dataType.split('(')[0]];
+	const dataType = column.data_type ? column.data_type.toLowerCase() : '';
+	const type = localTypeMap[dataType ? dataType.split('(')[0] : 'unknown'];
 
 	const special = field?.special;
 

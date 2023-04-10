@@ -50,6 +50,11 @@ export class ServerService {
 
 		info.project = projectInfo;
 
+		if (process.env.DB_CLIENT === '@etisoftware/knex-informix-dialect') {
+			info.project.project_name = process.env.DB_DATABASE ? process.env.DB_DATABASE : 'Directus';
+			info.project.project_color = null;
+		}
+
 		if (this.accountability?.user) {
 			if (env.RATE_LIMITER_ENABLED) {
 				info.rateLimit = {

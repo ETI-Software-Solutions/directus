@@ -5,6 +5,7 @@ import { isObject } from 'lodash';
 import path from 'path';
 import { Type, Field } from '@directus/shared/types';
 import { getHelpers } from '../helpers';
+import { now } from '../migrations/utils';
 
 type TableSeed = {
 	table: string;
@@ -35,23 +36,6 @@ export default async function runSeed(database: Knex): Promise<void> {
 	}
 
 	const tableSeeds = await fse.readdir(path.resolve(__dirname));
-
-	const formatDefault = (value: any, type: any, client: any) => {
-		if (value === void 0) {
-			return '';
-		} else if (value === null) {
-			return 'null';
-		} else if (value && value.isRawInstance) {
-			return value.toQuery();
-		} else if (type === 'bool') {
-			if (value === 'false') value = 'f';
-			return value ? 't' : 'f';
-		} else if ((type === 'json' || type === 'jsonb') && isObject(value)) {
-			return `'${JSON.stringify(value)}'`;
-		} else {
-			return client._escapeBinding(value.toString());
-		}
-	};
 
 	for (const tableSeedFile of tableSeeds) {
 		if (tableSeedFile.startsWith('run')) continue;
@@ -97,16 +81,10 @@ export default async function runSeed(database: Knex): Promise<void> {
 					}
 
 					if (defaultValue === '$now') {
-						defaultValue = database!.fn.now();
+						defaultValue = now(database);
 					}
 
-					if (process.env.DB_CLIENT === '@etisoftware/knex-informix-dialect') {
-						column.defaultTo = (value: string): any => {
-							return `default ${formatDefault(value, columnInfo.type, database.client)}`;
-						};
-					} else {
-						column.defaultTo(defaultValue);
-					}
+					column.defaultTo(defaultValue);
 				}
 
 				if (columnInfo.unique) {

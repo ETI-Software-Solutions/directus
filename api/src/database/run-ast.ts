@@ -254,7 +254,27 @@ async function getDBQuery(
 	// Queries with aggregates and groupBy will not have duplicate result
 	if (queryCopy.aggregate || queryCopy.group) {
 		const flatQuery = knex.select(fieldNodes.map(preProcess)).from(table);
-		return await applyQuery(knex, table, flatQuery, queryCopy, schema).query;
+		const sql = await applyQuery(knex, table, flatQuery, queryCopy, schema).query;
+
+		const output: Record<string, number> = {};
+		Object.entries(sql[0]).map(([k, v]) => {
+			let keyParts = [];
+			let key: string = k.replace('_', '->');
+			if (key.includes('distinct')) {
+				keyParts = key.split('->');
+				keyParts[0] = keyParts[0].replace('distinct', 'Distinct');
+				key = String(keyParts.join('->'));
+			}
+			if (key.includes('all')) {
+				keyParts = key.split('->');
+				keyParts[0] = keyParts[0].replace('all', 'All');
+				key = String(keyParts.join('->'));
+			}
+			const val = parseInt(String(v));
+			output[key] = val;
+		});
+
+		return [output];
 	}
 
 	const primaryKey = schema.collections[table].primary;

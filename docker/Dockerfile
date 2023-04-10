@@ -15,19 +15,13 @@ RUN rm *.tgz
 # Directus image
 FROM node:18-buster-slim
 ARG VERSION
-ARG REPOSITORY=directus/directus
+ARG REPOSITORY=docker.etisoftware.com/directus
 ARG INFORMIXDIR=/opt/IBM/informix/4.10
 LABEL directus.version="${VERSION}"
 # Default environment variables
 # (see https://docs.directus.io/reference/environment-variables/)
 ENV \
   DB_CLIENT="@etisoftware/knex-informix-dialect" \
-  DB_SERVER="deltadb1_on" \
-  DB_HOST="deltadb1.dev.eti.software" \
-  DB_PORT=9005 \
-  DB_USER="root" \
-  DB_PASSWORD="3t1vr00t" \
-  DB_DATABASE="cborg1000" \
   EXTENSIONS_PATH="/directus/extensions" \
   STORAGE_LOCAL_ROOT="/directus/uploads" \
   CSDK_HOME=${INFORMIXDIR} \
@@ -39,6 +33,7 @@ ENV \
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   msmtp \
   tzdata \
+  sendmail \
   unixodbc \
   unixodbc-dev \
   libncurses5 \

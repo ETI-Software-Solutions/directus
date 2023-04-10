@@ -291,7 +291,7 @@ export default defineComponent({
 			if (props.special === 'recent') {
 				filterParsed._and.push({
 					uploaded_on: {
-						_gt: subDays(new Date(), 5).toISOString(),
+						_gt: subDays(new Date(), 5).toISOString().replace('T', ' ').replace('Z', ''),
 					},
 				});
 			}
