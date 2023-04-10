@@ -45,18 +45,16 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 COPY /config/services /config/odbc.ini /config/odbcinst.ini /etc
 COPY /config/sqlhosts ${INFORMIXSQLHOSTS}
 COPY /config/init.sh /temp/init.sh
-RUN chmod 750 /temp/init.sh && /temp/init.sh
+RUN chmod 750 /temp/init.sh
 # Install Informix SDK
 RUN wget -O - https://etisoftware365-my.sharepoint.com/:u:/g/personal/rgoley_etisoftware_com/Ef3oltYcmndFlnhkCpAIRAUBURJkPSg2AMxoaE15kanEyQ\?e\=5cMNKo\&download\=1 | tar -x -C /temp
-RUN /temp/installclientsdk -i silent -f /temp/csdk.properties -DLICENSE_ACCEPTED=TRUE \
-  && rm -rf /temp
-# Switch to user 'node' and directory '/directus'
-USER node
+RUN /temp/installclientsdk -i silent -f /temp/csdk.properties -DLICENSE_ACCEPTED=TRUE
+# Switch to directory '/directus'
 WORKDIR /directus
 # disable npm update warnings
 RUN echo "update-notifier=false" >> ~/.npmrc \
   && cp /etc/odbc.ini ${HOME}/.odbc.ini
-COPY --from=builder --chown=node:node /directus .
+COPY --from=builder /directus .
 RUN \
   # Create data directories
   mkdir -p \
@@ -69,4 +67,4 @@ VOLUME \
   /directus/extensions \
   /directus/uploads
 EXPOSE 8055
-CMD npx directus bootstrap && npx directus start
+CMD /temp/init.sh && npx directus bootstrap && npx directus start
