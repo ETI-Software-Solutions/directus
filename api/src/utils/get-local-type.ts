@@ -113,7 +113,14 @@ export default function getLocalType(
 ): Type | 'unknown' {
 	if (!column) return 'alias';
 
-	const dataType = column.data_type ? column.data_type.toLowerCase() : '';
+	let dataType = column.data_type ? column.data_type.toLowerCase().trim() : '';
+
+	if (process.env.DB_CLIENT === '@etisoftware/knex-informix-dialect') {
+		if (column.data_type.toLowerCase().trim() === 'datetime') {
+			dataType = 'timestamp';
+		}
+	}
+
 	const type = localTypeMap[dataType ? dataType.split('(')[0] : 'unknown'];
 
 	const special = field?.special;
