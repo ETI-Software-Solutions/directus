@@ -116,7 +116,7 @@ export default function getLocalType(
 	let dataType = column.data_type ? column.data_type.toLowerCase().trim() : '';
 
 	if (process.env.DB_CLIENT === '@etisoftware/knex-informix-dialect') {
-		if (column.data_type.toLowerCase().trim() === 'datetime') {
+		if (column.data_type && column.data_type.toLowerCase().trim() === 'datetime') {
 			dataType = 'timestamp';
 		}
 	}
