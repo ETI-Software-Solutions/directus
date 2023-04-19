@@ -1,4 +1,4 @@
-FROM node:18-buster-slim as builder
+FROM node:18.15.0-buster-slim as builder
 ARG TARGETPLATFORM
 WORKDIR /directus
 COPY /dist .
@@ -13,7 +13,7 @@ RUN npm install --no-package-lock
 RUN rm *.tgz
 
 # Directus image
-FROM node:18-buster-slim
+FROM node:18.15.0-buster-slim
 ARG VERSION
 ARG REPOSITORY=docker.etisoftware.com/directus
 ARG INFORMIXDIR=/opt/IBM/informix/4.10

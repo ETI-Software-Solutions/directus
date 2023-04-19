@@ -21,11 +21,24 @@ router.post(
 
 		const savedKeys: PrimaryKey[] = [];
 
+		let payload;
+
 		if (Array.isArray(req.body)) {
 			const keys = await service.createMany(req.body);
 			savedKeys.push(...keys);
 		} else {
-			const key = await service.createOne(req.body);
+			if (req.body.headers && Array.isArray(req.body.headers)) {
+				payload = {
+					...req.body,
+					headers: {
+						data: req.body.headers,
+					},
+				};
+			} else {
+				payload = req.body;
+			}
+
+			const key = await service.createOne(payload);
 			savedKeys.push(key);
 		}
 
@@ -35,7 +48,19 @@ router.post(
 				res.locals.payload = { data: items };
 			} else {
 				const item = await service.readOne(savedKeys[0], req.sanitizedQuery);
-				res.locals.payload = { data: item };
+				let result;
+				// @ts-ignore
+				if (item.headers && Array.isArray(item.headers.data)) {
+					result = {
+						...item,
+						// @ts-ignore
+						headers: item.headers.data,
+					};
+				} else {
+					result = item;
+				}
+
+				res.locals.payload = { data: result };
 			}
 		} catch (error: any) {
 			if (error instanceof ForbiddenException) {
@@ -80,7 +105,19 @@ router.get(
 
 		const record = await service.readOne(req.params.pk, req.sanitizedQuery);
 
-		res.locals.payload = { data: record || null };
+		let result;
+		// @ts-ignore
+		if (record.headers && Array.isArray(record.headers.data)) {
+			result = {
+				...record,
+				// @ts-ignore
+				headers: record.headers.data,
+			};
+		} else {
+			result = record;
+		}
+
+		res.locals.payload = { data: result || null };
 		return next();
 	}),
 	respond
@@ -127,11 +164,37 @@ router.patch(
 			schema: req.schema,
 		});
 
-		const primaryKey = await service.updateOne(req.params.pk, req.body);
+		let payload;
+
+		if (req.body.headers && Array.isArray(req.body.headers)) {
+			payload = {
+				...req.body,
+				headers: {
+					data: req.body.headers,
+				},
+			};
+		} else {
+			payload = req.body;
+		}
+
+		const primaryKey = await service.updateOne(req.params.pk, payload);
 
 		try {
 			const item = await service.readOne(primaryKey, req.sanitizedQuery);
-			res.locals.payload = { data: item || null };
+
+			let result;
+			// @ts-ignore
+			if (item.headers && Array.isArray(item.headers.data)) {
+				result = {
+					...item,
+					// @ts-ignore
+					headers: item.headers.data,
+				};
+			} else {
+				result = item;
+			}
+
+			res.locals.payload = { data: result || null };
 		} catch (error: any) {
 			if (error instanceof ForbiddenException) {
 				return next();

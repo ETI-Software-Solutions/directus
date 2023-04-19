@@ -23,15 +23,15 @@ export class FnHelperInformixDB extends FnHelper {
 	}
 
 	hour(table: string, column: string): Knex.Raw {
-		return this.knex.raw('EXTEND(??.??, HOUR TO HOUR)::INT', [table, column]);
+		return this.knex.raw('HOUR(??.??)', [table, column]);
 	}
 
 	minute(table: string, column: string): Knex.Raw {
-		return this.knex.raw('EXTEND(??.??, MINUTE TO MINUTE)::INT', [table, column]);
+		return this.knex.raw('MINUTE(??.??)', [table, column]);
 	}
 
 	second(table: string, column: string): Knex.Raw {
-		return this.knex.raw('EXTEND(??.??, SECOND TO SECOND)::INT', [table, column]);
+		return this.knex.raw('SECOND(??.??)', [table, column]);
 	}
 
 	count(table: string, column: string, options?: FnHelperOptions): Knex.Raw {
