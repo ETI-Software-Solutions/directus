@@ -318,7 +318,7 @@ export default class InformixDB implements SchemaInspector {
 			END FOREACH;
 		END FUNCTION;
 		`;
-		this.knex.raw(spAllInfo);
+		await this.knex.raw(spAllInfo);
 
 		const isPrimaryKey = `
 		DROP FUNCTION IF EXISTS is_primary_key;
@@ -415,7 +415,7 @@ export default class InformixDB implements SchemaInspector {
 		END FUNCTION;
 		`;
 
-		this.knex.raw(isPrimaryKey);
+		await this.knex.raw(isPrimaryKey);
 
 		let query = `
 		SELECT table as TABLE_NAME,
@@ -566,7 +566,7 @@ export default class InformixDB implements SchemaInspector {
 	// ===============================================================================================
 
 	async foreignKeys(table?: string) {
-		this.knex.raw(
+		await this.knex.raw(
 			`DROP FUNCTION IF EXISTS sp_allconst;
 
 			CREATE FUNCTION sp_allconst() RETURNING VARCHAR(128) AS dtabname,
@@ -664,11 +664,11 @@ export default class InformixDB implements SchemaInspector {
 		);
 
 		let sql = `
-		SELECT table, column, foreign_key_table, foreign_key_column, constraint_name,
-		'R' AS update_rule, 'R' AS delete_rule
-		FROM TABLE (FUNCTION sp_allconst()) 
-		allconstraints( table, column, foreign_key_table, foreign_key_column, constraint_name)
-	`;
+			SELECT table, column, foreign_key_table, foreign_key_column, constraint_name,
+			'R' AS update_rule, 'R' AS delete_rule
+			FROM TABLE (FUNCTION sp_allconst()) 
+			allconstraints(table, column, foreign_key_table, foreign_key_column, constraint_name)
+		`;
 
 		if (table) {
 			sql += ` WHERE table = '${table}'`;

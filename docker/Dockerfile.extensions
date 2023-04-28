@@ -1,0 +1,2 @@
+FROM directus-test:latest
+RUN --mount=type=secret,id=npmrc,target=/root/.npmrc npm install @etisoftware/directus-extension-stored-procedures
