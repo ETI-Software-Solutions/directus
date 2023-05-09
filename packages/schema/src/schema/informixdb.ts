@@ -168,155 +168,190 @@ export default class InformixDB implements SchemaInspector {
 		const spAllInfo = `
 		DROP FUNCTION IF EXISTS sp_allinfo;
 
-		CREATE FUNCTION sp_allinfo() RETURNING
-			VARCHAR(128) AS dtabname,
-			VARCHAR(128) AS dcolname,
-			VARCHAR(128) AS ctabname,
-			VARCHAR(128) AS ccolname,
-			VARCHAR(128) AS cname;
+		CREATE FUNCTION "root".sp_allinfo() RETURNING VARCHAR(128) AS dtabname,
+                                       VARCHAR(128) AS dcolname,
+                                       VARCHAR(128) AS ctabname,
+                                       VARCHAR(128) AS ccolname,
+                                       VARCHAR(128) AS cname;
 
-			DEFINE l_constrname VARCHAR(128);
-			DEFINE l_dtabname   VARCHAR(128);
-			DEFINE l_ptabname   VARCHAR(128);
-			DEFINE l_dtabid     LIKE systables.tabid;
-			DEFINE l_ptabid     LIKE systables.tabid;
-			DEFINE l_dindexkeys LIKE sysindices.indexkeys;
-			DEFINE l_pindexkeys LIKE sysindices.indexkeys;
-			DEFINE l_dcolno     LIKE syscolumns.colno;
-			DEFINE l_pcolno     LIKE syscolumns.colno;
-			DEFINE l_dcolname   VARCHAR(128);
-			DEFINE l_pcolname   VARCHAR(128);
-			DEFINE l_keyid      SMALLINT;
+		DEFINE l_constrname VARCHAR(128);              -- foreign key constraint name
 
-			FOREACH
-				SELECT  dc.constrname,
-						TRIM(dt.tabname), dt.tabid, di.indexkeys,
-						TRIM(pt.tabname), pt.tabid, pi.indexkeys
-				INTO    l_constrname,
-						l_dtabname, l_dtabid, l_dindexkeys,
-						l_ptabname, l_ptabid, l_pindexkeys
-				FROM    sysconstraints AS dc
-				JOIN    sysobjstate    AS do ON do.name     = dc.constrname
-				JOIN    systables      AS dt ON dt.tabid    = dc.tabid
-				JOIN    sysindices     AS di ON di.idxname  = dc.idxname
-				JOIN    sysreferences  AS dr ON dr.constrid = dc.constrid
-				JOIN    sysconstraints AS pc ON pc.constrid = dr.primary
-				JOIN    systables      AS pt ON pt.tabid    = pc.tabid
-				JOIN    sysindices     AS pi ON pi.idxname  = pc.idxname
-				WHERE   dc.constrtype = 'R'
-				AND     do.objtype = 'C'
-				AND     do.state = 'E'
-				AND     dt.tabname not like 'sys%'
-				AND     dt.tabname not like 'vw%'
-				ORDER   BY 2, 1
+		DEFINE l_dtabname   VARCHAR(128);              -- detail table name
+		DEFINE l_ptabname   VARCHAR(128);              -- parent table name
+		DEFINE t_tabname    VARCHAR(128);              -- detail table name
 
-				LET l_keyid = 0;
-				LET l_dcolno = ikeyextractcolno(l_dindexkeys, l_keyid);
-				LET l_pcolno = ikeyextractcolno(l_pindexkeys, l_keyid);
+		DEFINE l_dtabid     LIKE systables.tabid;      -- detail table ID
+		DEFINE l_ptabid     LIKE systables.tabid;      -- parent table ID
+		DEFINE t_tabid      LIKE systables.tabid;      -- parent table ID
 
-				IF l_dcolno != 0 THEN
-					SELECT  TRIM(colname)
-					INTO    l_dcolname
-					FROM    syscolumns
-					WHERE   tabid = l_dtabid
-					AND     colno = l_dcolno;
+		DEFINE l_dindexkeys LIKE sysindices.indexkeys; -- detail index column numbers
+		DEFINE l_pindexkeys LIKE sysindices.indexkeys; -- parent index column numbers
 
-					SELECT  TRIM(colname)
-					INTO    l_pcolname
-					FROM    syscolumns
-					WHERE   tabid = l_ptabid
-					AND     colno = l_pcolno;
+		DEFINE l_dcolno     LIKE syscolumns.colno;     -- detail column number
+		DEFINE l_pcolno     LIKE syscolumns.colno;     -- parent column number
+		DEFINE t_colno     LIKE syscolumns.colno;     -- detail column number
 
-					RETURN l_dtabname, l_dcolname, l_ptabname, l_pcolname, l_constrname WITH RESUME;
-				END IF
-			END FOREACH;
+		DEFINE l_dcolname   VARCHAR(128);              -- detail column name
+		DEFINE l_pcolname   VARCHAR(128);              -- parent column name
+		DEFINE t_colname   VARCHAR(128);              -- parent column name
 
-			FOREACH
-				SELECT  dc.constrname,
-						TRIM(dt.tabname), dt.tabid, di.indexkeys,
-						TRIM(pt.tabname), pt.tabid, pi.indexkeys
-				INTO    l_constrname,
-						l_dtabname, l_dtabid, l_dindexkeys,
-						l_ptabname, l_ptabid, l_pindexkeys
-				FROM    sysconstraints AS dc
-				JOIN    sysobjstate    AS do ON do.name     = dc.constrname
-				JOIN    systables      AS dt ON dt.tabid    = dc.tabid
-				JOIN    sysindices     AS di ON di.idxname  = dc.idxname
-				JOIN    sysreferences  AS dr ON dr.constrid = dc.constrid
-				JOIN    sysconstraints AS pc ON pc.constrid = dr.primary
-				JOIN    systables      AS pt ON pt.tabid    = pc.tabid
-				JOIN    sysindices     AS pi ON pi.idxname  = pc.idxname
-				WHERE   dc.constrtype = 'R'
-				AND     do.objtype = 'C'
-				AND     do.state = 'E'
-				AND     dt.tabname not like 'sys%'
-				AND     dt.tabname not like 'vw%'
-				ORDER   BY 2, 1
+		DEFINE l_keyid      SMALLINT;                  -- index array pointer
 
-				LET l_keyid = 1;
-				LET l_dcolno = ikeyextractcolno(l_dindexkeys, l_keyid);
-				LET l_pcolno = ikeyextractcolno(l_pindexkeys, l_keyid);
+		DEFINE l_ccnt       SMALLINT;
 
-				IF l_dcolno != 0 THEN
-					SELECT  TRIM(colname)
-					INTO    l_dcolname
-					FROM    syscolumns
-					WHERE   tabid = l_dtabid
-					AND     colno = l_dcolno;
 
-					SELECT  TRIM(colname)
-					INTO    l_pcolname
-					FROM    syscolumns
-					WHERE   tabid = l_ptabid
-					AND     colno = l_pcolno;
+		FOREACH
+		SELECT st.tabid, st.tabname, sc.colno, sc.colname
+		INTO t_tabid, t_tabname, t_colno, t_colname
+		FROM systables AS st
+		JOIN syscolumns AS sc ON st.tabid = sc.tabid
+		WHERE   st.tabname not like 'sys%'
+		AND     st.tabname not like 'vw%'
 
-					RETURN l_dtabname, l_dcolname, l_ptabname, l_pcolname, l_constrname WITH RESUME;
-				END IF
-			END FOREACH;
+		LET l_ccnt = 0;
+		FOREACH
 
-			FOREACH
-				SELECT  dc.constrname,
-						TRIM(dt.tabname), dt.tabid, di.indexkeys,
-						TRIM(pt.tabname), pt.tabid, pi.indexkeys
-				INTO    l_constrname,
-						l_dtabname, l_dtabid, l_dindexkeys,
-						l_ptabname, l_ptabid, l_pindexkeys
-				FROM    sysconstraints AS dc
-				JOIN    sysobjstate    AS do ON do.name     = dc.constrname
-				JOIN    systables      AS dt ON dt.tabid    = dc.tabid
-				JOIN    sysindices     AS di ON di.idxname  = dc.idxname
-				JOIN    sysreferences  AS dr ON dr.constrid = dc.constrid
-				JOIN    sysconstraints AS pc ON pc.constrid = dr.primary
-				JOIN    systables      AS pt ON pt.tabid    = pc.tabid
-				JOIN    sysindices     AS pi ON pi.idxname  = pc.idxname
-				WHERE   dc.constrtype = 'R'
-				AND     do.objtype = 'C'
-				AND     do.state = 'E'
-				AND     dt.tabname not like 'sys%'
-				AND     dt.tabname not like 'vw%'
-				ORDER   BY 2, 1
+			SELECT  dc.constrname,
+					TRIM(dt.tabname), dt.tabid, di.indexkeys,
+					TRIM(pt.tabname), pt.tabid, pi.indexkeys
+			INTO    l_constrname,
+					l_dtabname, l_dtabid, l_dindexkeys,
+					l_ptabname, l_ptabid, l_pindexkeys
+			FROM    systables      AS dt
+			LEFT JOIN    sysconstraints AS dc ON dc.tabid    = dt.tabid
+			LEFT JOIN    sysobjstate    AS do ON do.name     = dc.constrname
+			LEFT JOIN    sysindices     AS di ON di.idxname  = dc.idxname
+			LEFT JOIN    sysreferences  AS dr ON dr.constrid = dc.constrid
+			LEFT JOIN    sysconstraints AS pc ON pc.constrid = dr.primary
+			JOIN    systables      AS pt ON pt.tabid    = pc.tabid
+			LEFT JOIN    sysindices     AS pi ON pi.idxname  = pc.idxname
+			WHERE dt.tabid = t_tabid
 
-				LET l_keyid = 2;
-				LET l_dcolno = ikeyextractcolno(l_dindexkeys, l_keyid);
-				LET l_pcolno = ikeyextractcolno(l_pindexkeys, l_keyid);
 
-				IF l_dcolno != 0 THEN
-					SELECT  TRIM(colname)
-					INTO    l_dcolname
-					FROM    syscolumns
-					WHERE   tabid = l_dtabid
-					AND     colno = l_dcolno;
+			LET l_keyid = 0;
 
-					SELECT  TRIM(colname)
-					INTO    l_pcolname
-					FROM    syscolumns
-					WHERE   tabid = l_ptabid
-					AND     colno = l_pcolno;
+			LET l_dcolno = ikeyextractcolno(l_dindexkeys, l_keyid);
+			LET l_pcolno = ikeyextractcolno(l_pindexkeys, l_keyid);
 
-					RETURN l_dtabname, l_dcolname, l_ptabname, l_pcolname, l_constrname WITH RESUME;
-				END IF
-			END FOREACH;
-		END FUNCTION;
+			IF l_dcolno != 0 AND l_dcolno == t_colno THEN
+
+			SELECT  TRIM(colname)
+			INTO    l_dcolname
+			FROM    syscolumns
+			WHERE   tabid = l_dtabid
+			AND     colno = l_dcolno;
+
+			SELECT  TRIM(colname)
+			INTO    l_pcolname
+			FROM    syscolumns
+			WHERE   tabid = l_ptabid
+			AND     colno = l_pcolno;
+
+			IF l_dcolname == t_colname THEN
+				LET l_ccnt = l_ccnt + 1;
+				RETURN l_dtabname, l_dcolname, l_ptabname, l_pcolname, l_constrname WITH RESUME;
+			END IF
+			END IF
+		END FOREACH;
+
+		FOREACH
+
+			SELECT  dc.constrname,
+					TRIM(dt.tabname), dt.tabid, di.indexkeys,
+					TRIM(pt.tabname), pt.tabid, pi.indexkeys
+			INTO    l_constrname,
+					l_dtabname, l_dtabid, l_dindexkeys,
+					l_ptabname, l_ptabid, l_pindexkeys
+			FROM    systables      AS dt
+			LEFT JOIN    sysconstraints AS dc ON dc.tabid    = dt.tabid
+			LEFT JOIN    sysobjstate    AS do ON do.name     = dc.constrname
+			LEFT JOIN    sysindices     AS di ON di.idxname  = dc.idxname
+			LEFT JOIN    sysreferences  AS dr ON dr.constrid = dc.constrid
+			LEFT JOIN    sysconstraints AS pc ON pc.constrid = dr.primary
+			JOIN    systables      AS pt ON pt.tabid    = pc.tabid
+			LEFT JOIN    sysindices     AS pi ON pi.idxname  = pc.idxname
+			WHERE dt.tabid = t_tabid
+
+
+			LET l_keyid = 1;
+
+			LET l_dcolno = ikeyextractcolno(l_dindexkeys, l_keyid);
+			LET l_pcolno = ikeyextractcolno(l_pindexkeys, l_keyid);
+
+			IF l_dcolno != 0 AND l_dcolno == t_colno THEN
+
+			SELECT  TRIM(colname)
+			INTO    l_dcolname
+			FROM    syscolumns
+			WHERE   tabid = l_dtabid
+			AND     colno = l_dcolno;
+
+			SELECT  TRIM(colname)
+			INTO    l_pcolname
+			FROM    syscolumns
+			WHERE   tabid = l_ptabid
+			AND     colno = l_pcolno;
+
+			IF l_dcolname == t_colname THEN
+				LET l_ccnt = l_ccnt + 1;
+				RETURN l_dtabname, l_dcolname, l_ptabname, l_pcolname, l_constrname WITH RESUME;
+			END IF
+			END IF
+		END FOREACH;
+
+		FOREACH
+
+			SELECT  dc.constrname,
+					TRIM(dt.tabname), dt.tabid, di.indexkeys,
+					TRIM(pt.tabname), pt.tabid, pi.indexkeys
+			INTO    l_constrname,
+					l_dtabname, l_dtabid, l_dindexkeys,
+					l_ptabname, l_ptabid, l_pindexkeys
+			FROM    systables      AS dt
+			LEFT JOIN    sysconstraints AS dc ON dc.tabid    = dt.tabid
+			LEFT JOIN    sysobjstate    AS do ON do.name     = dc.constrname
+			LEFT JOIN    sysindices     AS di ON di.idxname  = dc.idxname
+			LEFT JOIN    sysreferences  AS dr ON dr.constrid = dc.constrid
+			LEFT JOIN    sysconstraints AS pc ON pc.constrid = dr.primary
+			JOIN    systables      AS pt ON pt.tabid    = pc.tabid
+			LEFT JOIN    sysindices     AS pi ON pi.idxname  = pc.idxname
+			WHERE dt.tabid = t_tabid
+
+
+			LET l_keyid = 2;
+
+			LET l_dcolno = ikeyextractcolno(l_dindexkeys, l_keyid);
+			LET l_pcolno = ikeyextractcolno(l_pindexkeys, l_keyid);
+
+			IF l_dcolno != 0 AND l_dcolno == t_colno THEN
+
+			SELECT  TRIM(colname)
+			INTO    l_dcolname
+			FROM    syscolumns
+			WHERE   tabid = l_dtabid
+			AND     colno = l_dcolno;
+
+			SELECT  TRIM(colname)
+			INTO    l_pcolname
+			FROM    syscolumns
+			WHERE   tabid = l_ptabid
+			AND     colno = l_pcolno;
+
+			IF l_dcolname == t_colname THEN
+				LET l_ccnt = l_ccnt + 1;
+				RETURN l_dtabname, l_dcolname, l_ptabname, l_pcolname, l_constrname WITH RESUME;
+			END IF
+			END IF
+		END FOREACH;
+
+
+		IF l_ccnt == 0 THEN
+			RETURN t_tabname, t_colname, '', '', '' WITH RESUME;
+		END IF
+
+		END FOREACH;
+
+	END FUNCTION;
 		`;
 		await this.knex.raw(spAllInfo);
 
@@ -327,9 +362,9 @@ export default class InformixDB implements SchemaInspector {
 									icolname VARCHAR(128)) 
 			RETURNING INTEGER AS ispri; 
 
-		DEFINE l_dtabname   VARCHAR(128);
-		DEFINE l_dcolname   VARCHAR(128);
-		DEFINE l_colkey     VARCHAR(128);
+		DEFINE l_dtabname   VARCHAR(128);              -- table name
+		DEFINE l_dcolname   VARCHAR(128);              -- column name
+		DEFINE l_colkey     VARCHAR(128);              -- column key
 
 
 		FOREACH
@@ -575,24 +610,24 @@ export default class InformixDB implements SchemaInspector {
 													VARCHAR(128) AS ccolname,
 													VARCHAR(128) AS cname;
 
-				DEFINE l_constrname VARCHAR(128);
+				DEFINE l_constrname VARCHAR(128);              -- foreign key constraint name
 
-				DEFINE l_dtabname   VARCHAR(128);
-				DEFINE l_ptabname   VARCHAR(128);
+				DEFINE l_dtabname   VARCHAR(128);              -- detail table name
+				DEFINE l_ptabname   VARCHAR(128);              -- parent table name
 
-				DEFINE l_dtabid     LIKE systables.tabid;
-				DEFINE l_ptabid     LIKE systables.tabid;
+				DEFINE l_dtabid     LIKE systables.tabid;      -- detail table ID
+				DEFINE l_ptabid     LIKE systables.tabid;      -- parent table ID
 
-				DEFINE l_dindexkeys LIKE sysindices.indexkeys;
-				DEFINE l_pindexkeys LIKE sysindices.indexkeys;
+				DEFINE l_dindexkeys LIKE sysindices.indexkeys; -- detail index column numbers
+				DEFINE l_pindexkeys LIKE sysindices.indexkeys; -- parent index column numbers
 
-				DEFINE l_dcolno     LIKE syscolumns.colno;
-				DEFINE l_pcolno     LIKE syscolumns.colno;
+				DEFINE l_dcolno     LIKE syscolumns.colno;     -- detail column number
+				DEFINE l_pcolno     LIKE syscolumns.colno;     -- parent column numbe
 
-				DEFINE l_dcolname   VARCHAR(128);
-				DEFINE l_pcolname   VARCHAR(128);
+				DEFINE l_dcolname   VARCHAR(128);              -- detail column name
+				DEFINE l_pcolname   VARCHAR(128);              -- parent column name
 
-				DEFINE l_keyid      SMALLINT;
+				DEFINE l_keyid      SMALLINT;                  -- index array pointer
 
 				FOREACH
 
