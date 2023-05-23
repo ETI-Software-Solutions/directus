@@ -6,6 +6,7 @@ import { validateBatch } from '../middleware/validate-batch';
 import { ItemsService, MetaService } from '../services';
 import { PrimaryKey } from '../types';
 import asyncHandler from '../utils/async-handler';
+import { trimObjectStrings } from '../utils/trim-object-strings';
 
 const router = express.Router();
 
@@ -105,7 +106,7 @@ router.get(
 		const result = await service.readOne(req.params.pk, req.sanitizedQuery);
 
 		res.locals.payload = {
-			data: result || null,
+			data: trimObjectStrings(result) || null,
 		};
 
 		return next();
