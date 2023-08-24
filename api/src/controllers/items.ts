@@ -83,7 +83,7 @@ const readHandler = asyncHandler(async (req, res, next) => {
 
 	res.locals.payload = {
 		meta: meta,
-		data: result,
+		data: trimObjectStrings(result),
 	};
 
 	return next();
