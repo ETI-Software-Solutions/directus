@@ -31,18 +31,20 @@ export const useSettingsStore = defineStore({
 
 			this.settings = newSettings;
 
-			updates = {
-				translation_strings: {
-					data: [...updates.translation_strings],
-				},
-			};
+			if (updates.translation_strings) {
+				updates = {
+					translation_strings: {
+						data: [...updates.translation_strings],
+					},
+				};
+			}
 
 			try {
 				const response = await api.patch(`/settings`, updates);
 
 				this.settings = {
 					...response.data.data,
-					translation_strings: response.data.data.translation_strings.data,
+					translation_strings: response.data.data.translation_strings?.data || null,
 				};
 
 				if (notifyOnSuccess) {

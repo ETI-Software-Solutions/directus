@@ -100,8 +100,8 @@ export class MailService {
 			.first();
 
 		return {
-			projectName: projectInfo?.project_name || 'Directus',
-			projectColor: projectInfo?.project_color || '#546e7a',
+			projectName: projectInfo?.project_name || 'ETI Software',
+			projectColor: projectInfo?.project_color || '#171C21',
 			projectLogo: getProjectLogoURL(projectInfo?.project_logo),
 			projectUrl: projectInfo?.project_url || '',
 		};
@@ -112,7 +112,7 @@ export class MailService {
 			if (logoID) {
 				projectLogoUrl.addPath('assets', logoID);
 			} else {
-				projectLogoUrl.addPath('admin', 'img', 'directus-white.png');
+				projectLogoUrl.addPath('admin', 'img', 'etisoftware-white.png');
 			}
 
 			return projectLogoUrl.toString();
