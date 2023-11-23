@@ -7,6 +7,12 @@ const filename = ({ filepath }: { filepath: string }): Record<string, string> =>
 	default: path.join(filepath, 'data.db'),
 });
 
+const server = (): Record<string, string> => ({
+	type: 'input',
+	name: 'server',
+	message: 'Database Server:',
+});
+
 const host = (): Record<string, string> => ({
 	type: 'input',
 	name: 'host',
@@ -25,6 +31,7 @@ const port = ({ client }: { client: string }): Record<string, any> => ({
 			mysql: 3306,
 			oracledb: 1521,
 			mssql: 1433,
+			'@etisoftware/knex-informix-dialect': 1526,
 		};
 
 		return ports[client];
@@ -72,4 +79,5 @@ export const databaseQuestions = {
 	cockroachdb: [host, port, database, user, password, ssl],
 	oracledb: [host, port, database, user, password],
 	mssql: [host, port, database, user, password, encrypt],
+	'@etisoftware/knex-informix-dialect': [server, host, port, database, user, password],
 };

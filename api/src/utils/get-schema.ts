@@ -107,7 +107,7 @@ async function getDatabaseSchema(
 					generated: column.is_generated ?? false,
 					type: getLocalType(column),
 					dbType: column.data_type,
-					precision: column.numeric_precision || null,
+					precision: info.columns[column.column_name].max_length || null,
 					scale: column.numeric_scale || null,
 					special: [],
 					note: null,

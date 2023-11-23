@@ -51,6 +51,16 @@ export class ServerService {
 
 		info.project = projectInfo;
 
+		if (process.env.DB_CLIENT === '@etisoftware/knex-informix-dialect') {
+			info.project.project_descriptor = info.project.project_descriptor || process.env.DB_DATABASE;
+
+			if (projectInfo.project_color.trim().length === 0) {
+				info.project.project_color = '#171C21';
+			} else {
+				info.project.project_color = projectInfo.project_color;
+			}
+		}
+
 		if (this.accountability?.user) {
 			if (env.RATE_LIMITER_ENABLED) {
 				info.rateLimit = {

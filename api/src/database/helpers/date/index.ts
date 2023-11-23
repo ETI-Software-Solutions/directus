@@ -5,3 +5,4 @@ export { DateHelperOracle as oracle } from './dialects/oracle';
 export { DateHelperMySQL as mysql } from './dialects/mysql';
 export { DateHelperMSSQL as mssql } from './dialects/mssql';
 export { DateHelperSQLite as sqlite } from './dialects/sqlite';
+export { DateHelperInformixDB as informixdb } from './dialects/informixdb';

@@ -292,6 +292,7 @@ const typeMap: Record<string, string> = {
 	HOST: 'string',
 	PORT: 'string',
 
+	DB_SERVER: 'string',
 	DB_NAME: 'string',
 	DB_USER: 'string',
 	DB_PASSWORD: 'string',

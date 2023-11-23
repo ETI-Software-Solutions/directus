@@ -49,7 +49,6 @@ export const useNotificationsStore = defineStore({
 					},
 				},
 			});
-
 			this.unread = countResponse.data.data[0].count.id;
 		},
 		add(notification: SnackbarRaw) {

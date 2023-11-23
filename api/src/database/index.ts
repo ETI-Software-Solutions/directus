@@ -11,6 +11,8 @@ import { merge } from 'lodash';
 import { promisify } from 'util';
 import { getHelpers } from './helpers';
 import { DatabaseClient } from '../types';
+// @ts-ignore
+import informixdb from '@etisoftware/knex-informix-dialect';
 
 let database: Knex | null = null;
 let inspector: ReturnType<typeof SchemaInspector> | null = null;
@@ -35,6 +37,12 @@ export default function getDatabase(): Knex {
 	switch (client) {
 		case 'sqlite3':
 			requiredEnvVars.push('DB_FILENAME');
+			break;
+
+		case '@etisoftware/knex-informix-dialect':
+			if (env.DB_SERVER) {
+				requiredEnvVars.push('DB_SERVER', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USER', 'DB_PASSWORD');
+			}
 			break;
 
 		case 'oracledb':
@@ -64,8 +72,10 @@ export default function getDatabase(): Knex {
 
 	validateEnv(requiredEnvVars);
 
+	const dbClient = client === '@etisoftware/knex-informix-dialect' ? informixdb : client;
+
 	const knexConfig: Knex.Config = {
-		client,
+		client: dbClient,
 		version,
 		searchPath,
 		connection: connectionString || connectionConfig,
@@ -176,6 +186,8 @@ export async function hasDatabaseConnection(database?: Knex): Promise<boolean> {
 	try {
 		if (getDatabaseClient(database) === 'oracle') {
 			await database.raw('select 1 from DUAL');
+		} else if (getDatabaseClient(database) === 'informixdb') {
+			await database.raw('SELECT 1 FROM sysmaster:informix.sysdual');
 		} else {
 			await database.raw('SELECT 1');
 		}
@@ -192,6 +204,8 @@ export async function validateDatabaseConnection(database?: Knex): Promise<void>
 	try {
 		if (getDatabaseClient(database) === 'oracle') {
 			await database.raw('select 1 from DUAL');
+		} else if (getDatabaseClient(database) === 'informixdb') {
+			await database.raw('SELECT 1 FROM sysmaster:informix.sysdual');
 		} else {
 			await database.raw('SELECT 1');
 		}
@@ -221,6 +235,8 @@ export function getDatabaseClient(database?: Knex): DatabaseClient {
 			return 'mssql';
 		case 'Client_Redshift':
 			return 'redshift';
+		case 'Client_Informix':
+			return 'informixdb';
 	}
 
 	throw new Error(`Couldn't extract database client`);

@@ -58,7 +58,8 @@ export function useTranslationStrings(): UsableTranslationStrings {
 		if (error === null) return;
 
 		const settingsStore = useSettingsStore();
-		const rawTranslationStrings = settingsStore.settings?.translation_strings;
+		// @ts-ignore
+		const rawTranslationStrings = settingsStore.settings?.translation_strings?.data;
 
 		if (rawTranslationStrings) {
 			translationStrings.value = rawTranslationStrings.map((p: TranslationStringRaw) => ({

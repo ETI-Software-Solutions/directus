@@ -1,5 +1,6 @@
 import { parseJSON, toArray } from '@directus/shared/utils';
 import { Knex } from 'knex';
+import { now } from './utils';
 import { v4 as uuid } from 'uuid';
 
 export async function up(knex: Knex): Promise<void> {
@@ -14,8 +15,8 @@ export async function up(knex: Knex): Promise<void> {
 		table.string('accountability').defaultTo('all');
 		table.json('options');
 		table.uuid('operation').unique();
-		table.timestamp('date_created').defaultTo(knex.fn.now());
-		table.uuid('user_created').references('id').inTable('directus_users').onDelete('SET NULL');
+		table.timestamp('date_created').defaultTo(now(knex));
+		table.uuid('user_created').references('id').inTable('directus_users');
 	});
 
 	await knex.schema.createTable('directus_operations', (table) => {
@@ -29,8 +30,8 @@ export async function up(knex: Knex): Promise<void> {
 		table.uuid('resolve').unique().references('id').inTable('directus_operations');
 		table.uuid('reject').unique().references('id').inTable('directus_operations');
 		table.uuid('flow').notNullable().references('id').inTable('directus_flows').onDelete('CASCADE');
-		table.timestamp('date_created').defaultTo(knex.fn.now());
-		table.uuid('user_created').references('id').inTable('directus_users').onDelete('SET NULL');
+		table.timestamp('date_created').defaultTo(now(knex));
+		table.uuid('user_created').references('id').inTable('directus_users');
 	});
 
 	const webhooks = await knex.select('*').from('directus_webhooks');

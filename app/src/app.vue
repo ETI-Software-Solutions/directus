@@ -83,13 +83,16 @@ export default defineComponent({
 		watch(
 			() => serverStore.info?.project?.project_name,
 			(projectName) => {
-				document.title = projectName || 'Directus';
+				document.title = projectName || 'ETI Software';
 			},
 			{ immediate: true }
 		);
 
 		const customCSS = computed(() => {
-			return serverStore.info?.project?.custom_css || '';
+			return (
+				serverStore.info?.project?.custom_css ||
+				'#app, #main-content, body {  --primary-10: #171C21 !important;  --primary-25: #0c92d1 !important;  --primary-50: #0c92d1 !important;  --primary-75: #0c92d1 !important;  --primary-90: #0c92d1 !important;  --primary: #0c92d1 !important;  --v-button-background-color: #0c92d1 !important;  --v-button-background-color-hover: #0c92d1 !important;  --sidebar-detail-color-active: #0c92d1 !important;}'
+			);
 		});
 
 		const error = computed(() => appStore.error);

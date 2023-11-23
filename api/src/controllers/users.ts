@@ -27,7 +27,12 @@ router.post(
 			const keys = await service.createMany(req.body);
 			savedKeys.push(...keys);
 		} else {
-			const key = await service.createOne(req.body);
+			const payload = {
+				...req.body,
+				external_identifier: req.body.external_identifier ? req.body.external_identifier : '',
+			};
+
+			const key = await service.createOne(payload);
 			savedKeys.push(key);
 		}
 

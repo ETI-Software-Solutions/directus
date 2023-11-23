@@ -31,13 +31,25 @@ export const useSettingsStore = defineStore({
 
 			this.settings = newSettings;
 
+			if (updates.translation_strings) {
+				updates = {
+					translation_strings: {
+						data: [...updates.translation_strings],
+					},
+				};
+			}
+
 			try {
 				const response = await api.patch(`/settings`, updates);
 
-				this.settings = response.data.data;
+				this.settings = {
+					...response.data.data,
+					translation_strings: response.data.data.translation_strings?.data || null,
+				};
 
 				if (notifyOnSuccess) {
 					notify({
+						// @ts-ignore
 						title: i18n.global.t('settings_update_success'),
 					});
 				}
@@ -54,7 +66,7 @@ export const useSettingsStore = defineStore({
 				},
 			});
 			const { translation_strings } = response.data.data;
-			if (this.settings) this.settings.translation_strings = translation_strings;
+			if (this.settings) this.settings.translation_strings = translation_strings.data;
 			return translation_strings;
 		},
 	},

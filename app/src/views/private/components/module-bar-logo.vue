@@ -33,8 +33,10 @@ export default defineComponent({
 		const settingsStore = useSettingsStore();
 
 		const customLogoPath = computed<string | null>(() => {
-			if (settingsStore.settings === null) return null;
-			if (!settingsStore.settings?.project_logo) return null;
+			if (settingsStore.settings === null)
+				return window.location.pathname.split('/admin/')[0] + '/admin/assets/etisoftware-c691f802.png';
+			if (!settingsStore.settings?.project_logo)
+				return window.location.pathname.split('/admin/')[0] + '/admin/assets/etisoftware-c691f802.png';
 			return `${getRootPath()}assets/${settingsStore.settings.project_logo}`;
 		});
 

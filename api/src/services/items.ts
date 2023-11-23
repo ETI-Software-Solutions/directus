@@ -923,7 +923,6 @@ export class ItemsService<Item extends AnyItem = AnyItem> implements AbstractSer
 		if (record) {
 			return await this.updateOne(record[primaryKeyField], data, opts);
 		}
-
 		return await this.createOne(data, opts);
 	}
 }

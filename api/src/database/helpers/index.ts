@@ -1,6 +1,6 @@
 import { SchemaOverview } from '@directus/shared/types';
 import { Knex } from 'knex';
-import { getDatabaseClient } from '..';
+import { getDatabaseClient } from '../index';
 
 import * as dateHelpers from './date';
 import * as fnHelpers from './fn';

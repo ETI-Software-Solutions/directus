@@ -1,12 +1,13 @@
 import { Knex } from 'knex';
 import { getHelpers } from '../helpers';
+import { now } from './utils';
 
 export async function up(knex: Knex): Promise<void> {
 	const helper = getHelpers(knex).schema;
 
 	await helper.changeToType('directus_notifications', 'timestamp', 'timestamp', {
 		nullable: true,
-		default: knex.fn.now(),
+		default: now(knex),
 	});
 }
 

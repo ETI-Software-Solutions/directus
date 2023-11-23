@@ -336,8 +336,20 @@ export class PayloadService {
 						}
 
 						if (dateColumn.type === 'timestamp') {
-							const newValue = this.helpers.date.writeTimestamp(value);
-							payload[name] = newValue;
+							if (process.env.DB_CLIENT === '@etisoftware/knex-informix-dialect') {
+								let newValue = this.helpers.date.readTimestampString(value);
+								if (dateColumn.precision === 3080) {
+									// datetime year to minute - 3080
+									newValue = newValue.slice(0, 16) + newValue.slice(newValue.length - 1, newValue.length);
+								} else if (dateColumn.precision === 3594) {
+									// datetime year to second - 3594
+									newValue = newValue.slice(0, 19) + newValue.slice(newValue.length - 1, newValue.length);
+								}
+								payload[name] = newValue.replace('T', ' ').replace('Z', '');
+							} else {
+								const newValue = this.helpers.date.writeTimestamp(value);
+								payload[name] = newValue;
+							}
 						}
 					}
 				}

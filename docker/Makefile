@@ -10,21 +10,25 @@ tag=latest
 
 build-image:
 	pnpm install
-	pnpm -r build
+	NODE_OPTIONS=--max_old_space_size=8192 pnpm -r build
 	node pack.js
-	docker build \
+	cp $$HOME/.npmrc ../dist
+	docker build --no-cache \
 		--build-arg VERSION=$(version) \
-		--build-arg REPOSITORY=$(image) \
 		-t $(image):$(version) \
 		-f ./Dockerfile \
 		..
 	docker tag $(image):$(version) $(image):$(tag)
+
+build-final-image:
+	docker build --build-arg VERSION=$(version) -t docker.etisoftware.com/directus:9.23.0-eti -f ./Dockerfile.extensions ..
 
 # To override or pass additional arguments:
 # DOCKER_ARGS='-p 8051:8055 -e LOG_STYLE=raw' make test-image
 test-image:
 	ARGS=($$DOCKER_ARGS); docker run \
 		--rm \
+		--dns 10.1.2.28 \
 		-t \
 		-p 8055:8055 \
 		-e "KEY=$$(uuidgen | tr '[:upper:]' '[:lower:]')" \

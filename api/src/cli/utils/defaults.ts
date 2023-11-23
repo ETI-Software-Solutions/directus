@@ -3,6 +3,8 @@ export const defaultAdminRole = {
 	icon: 'verified',
 	admin_access: true,
 	description: '$t:admin_description',
+	app_access: true,
+	enforce_tfa: false,
 };
 
 export const defaultAdminUser = {

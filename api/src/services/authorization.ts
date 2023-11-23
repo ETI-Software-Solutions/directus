@@ -541,6 +541,10 @@ export class AuthorizationService {
 			permission.validation = hasValidationRules ? { _and: [permission.validation!] } : { _and: [] };
 
 			for (const field of requiredColumns) {
+				if (field.dbType?.includes('SERIAL')) {
+					field.defaultValue = 'AUTO_INCREMENT';
+				}
+
 				if (action === 'create' && field.defaultValue === null) {
 					permission.validation._and.push({
 						[field.field]: {

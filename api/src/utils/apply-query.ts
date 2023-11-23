@@ -766,13 +766,23 @@ export function applyAggregate(dbQuery: Knex.QueryBuilder, aggregate: Aggregate,
 	for (const [operation, fields] of Object.entries(aggregate)) {
 		if (!fields) continue;
 
+		const isClientInformix = process.env.DB_CLIENT === '@etisoftware/knex-informix-dialect';
+
 		for (const field of fields) {
 			if (operation === 'avg') {
-				dbQuery.avg(`${collection}.${field}`, { as: `avg->${field}` });
+				if (isClientInformix) {
+					dbQuery.avg(`${collection}.${field}`, { as: `avg_${field}` });
+				} else {
+					dbQuery.avg(`${collection}.${field}`, { as: `avg->${field}` });
+				}
 			}
 
 			if (operation === 'avgDistinct') {
-				dbQuery.avgDistinct(`${collection}.${field}`, { as: `avgDistinct->${field}` });
+				if (isClientInformix) {
+					dbQuery.avgDistinct(`${collection}.${field}`, { as: `avgDistinct_${field}` });
+				} else {
+					dbQuery.avgDistinct(`${collection}.${field}`, { as: `avgDistinct->${field}` });
+				}
 			}
 
 			if (operation === 'countAll') {
@@ -783,28 +793,52 @@ export function applyAggregate(dbQuery: Knex.QueryBuilder, aggregate: Aggregate,
 				if (field === '*') {
 					dbQuery.count('*', { as: 'count' });
 				} else {
-					dbQuery.count(`${collection}.${field}`, { as: `count->${field}` });
+					if (isClientInformix) {
+						dbQuery.count(`${collection}.${field}`, { as: `count_${field}` });
+					} else {
+						dbQuery.count(`${collection}.${field}`, { as: `count->${field}` });
+					}
 				}
 			}
 
 			if (operation === 'countDistinct') {
-				dbQuery.countDistinct(`${collection}.${field}`, { as: `countDistinct->${field}` });
+				if (isClientInformix) {
+					dbQuery.countDistinct(`${collection}.${field}`, { as: `countDistinct_${field}` });
+				} else {
+					dbQuery.countDistinct(`${collection}.${field}`, { as: `countDistinct->${field}` });
+				}
 			}
 
 			if (operation === 'sum') {
-				dbQuery.sum(`${collection}.${field}`, { as: `sum->${field}` });
+				if (isClientInformix) {
+					dbQuery.sum(`${collection}.${field}`, { as: `sum_${field}` });
+				} else {
+					dbQuery.sum(`${collection}.${field}`, { as: `sum->${field}` });
+				}
 			}
 
 			if (operation === 'sumDistinct') {
-				dbQuery.sumDistinct(`${collection}.${field}`, { as: `sumDistinct->${field}` });
+				if (isClientInformix) {
+					dbQuery.sumDistinct(`${collection}.${field}`, { as: `sumDistinct_${field}` });
+				} else {
+					dbQuery.sumDistinct(`${collection}.${field}`, { as: `sumDistinct->${field}` });
+				}
 			}
 
 			if (operation === 'min') {
-				dbQuery.min(`${collection}.${field}`, { as: `min->${field}` });
+				if (isClientInformix) {
+					dbQuery.min(`${collection}.${field}`, { as: `min_${field}` });
+				} else {
+					dbQuery.min(`${collection}.${field}`, { as: `min->${field}` });
+				}
 			}
 
 			if (operation === 'max') {
-				dbQuery.max(`${collection}.${field}`, { as: `max->${field}` });
+				if (isClientInformix) {
+					dbQuery.max(`${collection}.${field}`, { as: `max_${field}` });
+				} else {
+					dbQuery.max(`${collection}.${field}`, { as: `max->${field}` });
+				}
 			}
 		}
 	}

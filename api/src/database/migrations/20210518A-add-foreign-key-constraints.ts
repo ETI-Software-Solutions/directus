@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import SchemaInspector from 'knex-schema-inspector';
+import SchemaInspector from '@directus/schema';
 import logger from '../../logger';
 import { RelationMeta } from '@directus/shared/types';
 import { getDefaultIndexName } from '../../utils/get-default-index-name';
@@ -101,15 +101,15 @@ export async function up(knex: Knex): Promise<void> {
 				}
 
 				const indexName = getDefaultIndexName('foreign', constraint.many_collection, constraint.many_field);
-				const builder = table
+				table
 					.foreign(constraint.many_field, indexName)
 					.references(relatedPrimaryKeyField)
 					.inTable(constraint.one_collection!);
 
 				// Can't reliably have circular cascade
-				if (constraint.many_collection !== constraint.one_collection) {
-					builder.onDelete('SET NULL');
-				}
+				// if (constraint.many_collection !== constraint.one_collection) {
+				// 	builder.onDelete('SET NULL');
+				// }
 			});
 		} catch (err: any) {
 			logger.warn(

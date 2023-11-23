@@ -5,6 +5,7 @@ import { isObject } from 'lodash';
 import path from 'path';
 import { Type, Field } from '@directus/shared/types';
 import { getHelpers } from '../helpers';
+import { now } from '../migrations/utils';
 
 type TableSeed = {
 	table: string;
@@ -80,7 +81,7 @@ export default async function runSeed(database: Knex): Promise<void> {
 					}
 
 					if (defaultValue === '$now') {
-						defaultValue = database!.fn.now();
+						defaultValue = now(database);
 					}
 
 					column.defaultTo(defaultValue);

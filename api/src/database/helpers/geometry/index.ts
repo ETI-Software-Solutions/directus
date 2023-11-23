@@ -5,3 +5,4 @@ export { GeometryHelperOracle as oracle } from './dialects/oracle';
 export { GeometryHelperSQLite as sqlite } from './dialects/sqlite';
 export { GeometryHelperMySQL as mysql } from './dialects/mysql';
 export { GeometryHelperMSSQL as mssql } from './dialects/mssql';
+export { GeometryHelperInformixDB as informixdb } from './dialects/informixdb';
