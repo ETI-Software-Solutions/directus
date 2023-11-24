@@ -1,5 +1,5 @@
 import { GeometryHelper } from '../types';
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 
 export class GeometryHelperInformixDB extends GeometryHelper {
 	collect(table: string, column: string): Knex.Raw {

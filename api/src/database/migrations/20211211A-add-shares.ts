@@ -1,4 +1,4 @@
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 import { now } from './utils';
 
 export async function up(knex: Knex): Promise<void> {

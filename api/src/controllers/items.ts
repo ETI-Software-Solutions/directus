@@ -4,7 +4,7 @@ import collectionExists from '../middleware/collection-exists';
 import { respond } from '../middleware/respond';
 import { validateBatch } from '../middleware/validate-batch';
 import { ItemsService, MetaService } from '../services';
-import { PrimaryKey } from '../types';
+import type { PrimaryKey } from '../types';
 import asyncHandler from '../utils/async-handler';
 import { trimObjectStrings } from '../utils/trim-object-strings';
 import { sanitizeQuery } from '../utils/sanitize-query';

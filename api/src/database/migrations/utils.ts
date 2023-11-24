@@ -1,4 +1,4 @@
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 
 export function now(client: Knex, precision?: string) {
 	if (typeof precision === 'number') {
