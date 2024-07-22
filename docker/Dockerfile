@@ -1,4 +1,4 @@
-FROM node:18.15.0-buster-slim as builder
+FROM node:18.15.0-buster-slim AS builder
 ARG TARGETPLATFORM
 WORKDIR /directus
 COPY /dist .
@@ -21,6 +21,15 @@ LABEL directus.version="${VERSION}"
 # Default environment variables
 # (see https://docs.directus.io/reference/environment-variables/)
 ENV \
+  DEBUG="knex:query,knex:tx,knex:bindings" \
+  ADMIN_EMAIL="admin@admin.com" \
+  ADMIN_PASSWORD="admin" \
+  DB_SERVER="cbridge_on" \
+  DB_HOST="betadb1.dev.eti.software" \
+  DB_PORT=9005 \
+  DB_USER="root" \
+  DB_PASSWORD="3t1vr00t" \
+  DB_DATABASE="cborg1000" \
   DB_CLIENT="@etisoftware/knex-informix-dialect" \
   EXTENSIONS_PATH="/directus/extensions" \
   STORAGE_LOCAL_ROOT="/directus/uploads" \
@@ -42,7 +51,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   wget \
   && rm -rf /var/lib/apt/lists/* \
   && mkdir /directus && chown node:node /directus
-COPY /config/services /config/odbc.ini /config/odbcinst.ini /etc
+COPY /config/odbc.ini /config/odbcinst.ini /etc
 COPY /config/sqlhosts ${INFORMIXSQLHOSTS}
 COPY /config/init.sh /temp/init.sh
 RUN chmod 750 /temp/init.sh
@@ -67,4 +76,4 @@ VOLUME \
   /directus/extensions \
   /directus/uploads
 EXPOSE 8055
-CMD /temp/init.sh && npx directus bootstrap && npx directus start
+CMD ["sh", "-c", "/temp/init.sh && npx directus bootstrap && npx directus start"]
