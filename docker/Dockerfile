@@ -21,15 +21,6 @@ LABEL directus.version="${VERSION}"
 # Default environment variables
 # (see https://docs.directus.io/reference/environment-variables/)
 ENV \
-  DEBUG="knex:query,knex:tx,knex:bindings" \
-  ADMIN_EMAIL="admin@admin.com" \
-  ADMIN_PASSWORD="admin" \
-  DB_SERVER="cbridge_on" \
-  DB_HOST="betadb1.dev.eti.software" \
-  DB_PORT=9005 \
-  DB_USER="root" \
-  DB_PASSWORD="3t1vr00t" \
-  DB_DATABASE="cborg1000" \
   DB_CLIENT="@etisoftware/knex-informix-dialect" \
   EXTENSIONS_PATH="/directus/extensions" \
   STORAGE_LOCAL_ROOT="/directus/uploads" \
