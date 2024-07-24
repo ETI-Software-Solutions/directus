@@ -25,6 +25,7 @@ import { getIPFromReq } from '../../utils/get-ip-from-req';
 import { getMilliseconds } from '../../utils/get-milliseconds';
 import { Url } from '../../utils/url';
 import { LocalAuthDriver } from './local';
+import { createHash, randomUUID } from 'crypto';
 
 export class OpenIDAuthDriver extends LocalAuthDriver {
 	client: Promise<Client>;
@@ -166,7 +167,7 @@ export class OpenIDAuthDriver extends LocalAuthDriver {
 			// Update user refreshToken if provided
 			if (tokenSet.refresh_token) {
 				await this.usersService.updateOne(userId, {
-					auth_data: JSON.stringify({ refreshToken: tokenSet.refresh_token }),
+					auth_data: { refreshToken: tokenSet.refresh_token },
 				});
 			}
 			return userId;
@@ -188,7 +189,11 @@ export class OpenIDAuthDriver extends LocalAuthDriver {
 				email: email,
 				external_identifier: identifier,
 				role: this.config.defaultRoleId,
-				auth_data: tokenSet.refresh_token && JSON.stringify({ refreshToken: tokenSet.refresh_token }),
+				status: 'active',
+				token: createHash('sha256')
+					.update(randomUUID() + email)
+					.digest('hex'),
+				auth_data: tokenSet.refresh_token && { refreshToken: tokenSet.refresh_token },
 			});
 		} catch (e) {
 			if (e instanceof RecordNotUniqueException) {
