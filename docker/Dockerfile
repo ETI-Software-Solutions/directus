@@ -15,7 +15,7 @@ RUN rm *.tgz
 # Directus image
 FROM node:18.15.0-buster-slim
 ARG VERSION
-ARG REPOSITORY=docker.etisoftware.com/directus
+ARG REPOSITORY=sjc.vultrcr.com/eti1/directus
 ARG INFORMIXDIR=/opt/IBM/informix/4.10
 LABEL directus.version="${VERSION}"
 # Default environment variables

@@ -21,7 +21,7 @@ build-image:
 	docker tag $(image):$(version) $(image):$(tag)
 
 build-final-image:
-	docker build --build-arg VERSION=$(version) -t docker.etisoftware.com/directus:9.23.0-eti -f ./Dockerfile.extensions ..
+	docker build --build-arg VERSION=$(version) -t sjc.vultrcr.com/eti1/directus:9.23.2-eti -f ./Dockerfile.extensions ..
 
 # To override or pass additional arguments:
 # DOCKER_ARGS='-p 8051:8055 -e LOG_STYLE=raw' make test-image
