@@ -2692,11 +2692,11 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   '@etisoftware/informixdb@2.2.2':
-    resolution: {integrity: sha512-BkOkuJYdhi8Y6+HEbe4dqJjhJV3Vlecnb15l6ZKybpu8YtcCl4foPcJZuefUmxpFz2vOxj+pM9qUMxU6dlB+Bw==, tarball: https://docker.etisoftware.com:443/artifactory/api/npm/npm-local/@etisoftware/informixdb/-/@etisoftware/informixdb-2.2.2.tgz}
+    resolution: {integrity: sha512-BkOkuJYdhi8Y6+HEbe4dqJjhJV3Vlecnb15l6ZKybpu8YtcCl4foPcJZuefUmxpFz2vOxj+pM9qUMxU6dlB+Bw==, tarball: https://trialsn14pe.jfrog.io:443/artifactory/api/npm/npm-local/@etisoftware/informixdb/-/@etisoftware/informixdb-2.2.2.tgz}
     engines: {node: '>=10.0.0'}
 
   '@etisoftware/knex-informix-dialect@1.0.2':
-    resolution: {integrity: sha512-if1fH9vN3/PbCw1fswCA58m20bx9ydU5MQuHmeIQwD7VsfSZJyqV1x8xG7/iHj3QfEsG3Azk2izpoyOZU4aJVQ==, tarball: https://docker.etisoftware.com:443/artifactory/api/npm/npm-local/@etisoftware/knex-informix-dialect/-/@etisoftware/knex-informix-dialect-1.0.2.tgz}
+    resolution: {integrity: sha512-if1fH9vN3/PbCw1fswCA58m20bx9ydU5MQuHmeIQwD7VsfSZJyqV1x8xG7/iHj3QfEsG3Azk2izpoyOZU4aJVQ==, tarball: https://trialsn14pe.jfrog.io:443/artifactory/api/npm/npm-local/@etisoftware/knex-informix-dialect/-/@etisoftware/knex-informix-dialect-1.0.2.tgz}
     peerDependencies:
       knex: '>=2.4.1'
 
